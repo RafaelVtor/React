@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const routes = require('./routes');
 
 const app = express();
@@ -8,6 +9,7 @@ mongoose.connect('mongodb+srv://rafaelvtor:Cecilia2429@cluster0-tax8s.mongodb.ne
     useUnifiedTopology: true,
 });
 
+app.use(cors());
 app.use(express.json());
 app.use(routes);
 //Métodos HTTP: GET, POST, PUT, DELETE

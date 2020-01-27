@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from './services/api';
 
 import './global.css';
 import './App.css';
@@ -12,6 +13,11 @@ import './main.css';
 //Estado: Informações mantidas pelo componente(Lembrar: Imutabilidade).
 
 function App() {
+  const [devs, setDevs] = useState([]);
+
+  const [github_username, setGithubUsername] = useState('');
+  const [techs, setTechs] = useState('');
+
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
 
@@ -32,6 +38,35 @@ function App() {
       }
     )
   },[]);
+
+  useEffect(()=>{
+    async function loadDevs(){
+      const response =await api.get('/devs');
+      
+      setDevs(response.data);
+    } 
+    loadDevs();
+  },[]);
+
+  async function handleAddDev(e){
+
+    e.preventDefault();
+    
+    const response = await api.post('/devs', {
+      github_username,
+      techs,
+      latitude,
+      longitude,
+    })
+
+    console.log(response.data);
+
+    setGithubUsername('');
+    setTechs('');
+
+    setDevs([...devs, response.data]);
+
+  }
   return (
     <div id="app">
       <aside>
@@ -39,11 +74,17 @@ function App() {
         <form>
           <div className="input-block">
             <label htmlFor="github_username">Usuário do GitHub</label>
-            <input name="github_username" id="username_github" required/>
+            <input name="github_username" id="username_github" required
+            value={github_username}
+            onChange={e=> setGithubUsername(e.target.value)}
+            />
           </div>
           <div className="input-block">
             <label htmlFor="techs">Tecnologias</label>
-            <input name="techs" id="techs" required/>
+            <input name="techs" id="techs" required
+            value={techs}
+            onChange={e=>setTechs(e.target.value)}
+            />
           </div>
 
           <div className="input-group">
@@ -65,46 +106,25 @@ function App() {
 
           </div>  
 
-          <button type="submit">Salvar</button>         
+          <button type="submit" onClick={handleAddDev}>Salvar</button>         
         </form>
       </aside>
       <main>
         <ul>
-          <li className="dev-item">
-            <header>
-              <img src="https://vignette.wikia.nocookie.net/avatar/images/4/46/Toph_Beifong.png/revision/latest/top-crop/width/360/height/450?cb=20141021174750&path-prefix=pt-br" alt="Toph Bei Fong" />
-              <div className="user-info">
-                <strong>Toph Bei Fong</strong>
-                <span>ReactJS, React Native, NodeJS</span>
-              </div>
-            </header>
-            <p>Mussum Ipsum, cacilds vidis litro abertis. Detraxit consequat et quo num tendi nada. Mauris nec dolor in eros commodo tempor.</p>
-            <a href="google.com">Acessar perfil no GitHub</a>
-          </li>
-
-          <li className="dev-item">
-            <header>
-              <img src="https://vignette.wikia.nocookie.net/avatar/images/4/46/Toph_Beifong.png/revision/latest/top-crop/width/360/height/450?cb=20141021174750&path-prefix=pt-br" alt="Toph Bei Fong" />
-              <div className="user-info">
-                <strong>Toph Bei Fong</strong>
-                <span>ReactJS, React Native, NodeJS</span>
-              </div>
-            </header>
-            <p>Mussum Ipsum, cacilds vidis litro abertis. Detraxit consequat et quo num tendi nada. Mauris nec dolor in eros commodo tempor.</p>
-            <a href="google.com">Acessar perfil no GitHub</a>
-          </li>
-
-          <li className="dev-item">
-            <header>
-              <img src="https://vignette.wikia.nocookie.net/avatar/images/4/46/Toph_Beifong.png/revision/latest/top-crop/width/360/height/450?cb=20141021174750&path-prefix=pt-br" alt="Toph Bei Fong" />
-              <div className="user-info">
-                <strong>Toph Bei Fong</strong>
-                <span>ReactJS, React Native, NodeJS</span>
-              </div>
-            </header>
-            <p>Mussum Ipsum, cacilds vidis litro abertis. Detraxit consequat et quo num tendi nada. Mauris nec dolor in eros commodo tempor.</p>
-            <a href="google.com">Acessar perfil no GitHub</a>
-          </li>
+          {devs.map(dev=>(
+            <li key={dev._id} className="dev-item">
+              <header>
+                <img src={dev.avatar_url} alt={devs.name} />
+                <div className="user-info">
+                  <strong>{dev.name}</strong>
+                  <span>{dev.techs.join(', ')}</span>
+                </div>
+              </header>
+              <p>{dev.bio}</p>
+              <a href={`https://github.com/${dev.github_username}`}>Acessar perfil no GitHub</a>
+            </li>  
+          ))}
+                  
         </ul>
       </main>
     </div>
